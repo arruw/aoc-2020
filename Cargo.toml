@@ -14,8 +14,4 @@ path = "src/utils.rs"
 name = "2020-01"
 path = "src/2020/day01.rs"
 
-[[bin]]
-name = "2020-x"
-path = "src/2020/x.rs"
-
 [dependencies]

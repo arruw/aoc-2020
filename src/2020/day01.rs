@@ -70,8 +70,7 @@ fn sum3n(input: &[i32], target_sum: i32) -> Option<(usize, usize, usize)> {
 
 #[cfg(test)]
 mod tests {
-    use crate::solve;
-    use aoc::read_input;
+    use super::*;
 
     #[test]
     fn test_sample_input() {
