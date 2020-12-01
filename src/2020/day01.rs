@@ -1,6 +1,7 @@
-use aoc::{read_input, Error};
+use aoc::read_input;
+use std::error::Error;
 
-fn main() -> Result<(), Error> {
+fn main() -> Result<(), Box<dyn Error>> {
     println!("Day 1!");
 
     let mut input = read_input::<i32>(2020, 1)?;

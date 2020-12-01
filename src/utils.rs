@@ -1,33 +1,23 @@
-use std::fmt;
+use std::error::Error;
+use std::fmt::Debug;
 use std::fs::*;
 use std::io::{prelude::*, BufReader};
 use std::str::FromStr;
 
-#[derive(Debug)]
-pub enum Error {
-    IoError,
-    FromStrError,
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self)
-    }
-}
-
-pub fn read_input<T: FromStr>(year: u32, day: u32) -> Result<Vec<T>, Error> {
+pub fn read_input<T>(year: u32, day: u32) -> Result<Vec<T>, Box<dyn Error>>
+where
+    T: FromStr,
+    <T as FromStr>::Err: Debug,
+{
     let path = format!("data/{}/day{:02}.txt", year, day);
 
-    let file = File::open(path).map_err(|_| Error::IoError)?;
+    let file = File::open(path)?;
 
-    let input: Result<Vec<_>, _> = BufReader::new(file)
+    let input: Vec<_> = BufReader::new(file)
         .lines()
         .map(|l| l.unwrap())
-        .map(|l| T::from_str(l.trim()))
+        .map(|l| l.trim().parse::<T>().unwrap())
         .collect();
 
-    match input {
-        Ok(x) => Ok(x),
-        Err(_) => Err(Error::FromStrError),
-    }
+    Ok(input)
 }
