@@ -1,14 +1,16 @@
 use std::error::Error;
 
 use aoc::read_input;
+use aoc::Result;
 use itertools::Itertools;
-use std::result::Result;
 
-fn main() {
+fn main() -> Result<()> {
     println!("Day 2!");
-    let mut input = read_input::<PasswordEntry<PasswordPolicy2>>(2020, 2).unwrap();
+    let mut input: Vec<PasswordEntry<PasswordPolicy2>> = read_input(2020, 2).unwrap();
     let solution = solve(&mut input);
     println!("Solution: {}", solution);
+
+    Ok(())
 }
 
 fn solve<T>(input: &mut Vec<PasswordEntry<T>>) -> usize
@@ -74,7 +76,7 @@ where
 {
     type Err = Box<dyn Error>;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    fn from_str(s: &str) -> Result<Self> {
         let (raw_policy, raw_password) = s.split(": ").collect_tuple().unwrap();
         let policy = raw_policy.parse::<T>().unwrap();
 
@@ -88,7 +90,7 @@ where
 impl std::str::FromStr for PasswordPolicy1 {
     type Err = Box<dyn Error>;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    fn from_str(s: &str) -> Result<Self> {
         let (raw_bounds, raw_char) = s.trim().split(' ').collect_tuple().unwrap();
         let (raw_lower_bound, raw_upper_bound) =
             raw_bounds.trim().split('-').collect_tuple().unwrap();
@@ -104,7 +106,7 @@ impl std::str::FromStr for PasswordPolicy1 {
 impl std::str::FromStr for PasswordPolicy2 {
     type Err = Box<dyn Error>;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    fn from_str(s: &str) -> Result<Self> {
         let (raw_bounds, raw_char) = s.trim().split(' ').collect_tuple().unwrap();
         let (raw_lower_index, raw_upper_index) =
             raw_bounds.trim().split('-').collect_tuple().unwrap();
@@ -145,14 +147,14 @@ mod tests {
 
     #[test]
     fn test_part1_solution() {
-        let mut input = read_input::<PasswordEntry<PasswordPolicy1>>(2020, 2).unwrap();
+        let mut input: Vec<PasswordEntry<PasswordPolicy1>> = read_input(2020, 2).unwrap();
         let solution = solve(&mut input);
         assert_eq!(439, solution);
     }
 
     #[test]
     fn test_part2_solution() {
-        let mut input = read_input::<PasswordEntry<PasswordPolicy2>>(2020, 2).unwrap();
+        let mut input: Vec<PasswordEntry<PasswordPolicy2>> = read_input(2020, 2).unwrap();
         let solution = solve(&mut input);
         assert_eq!(584, solution);
     }

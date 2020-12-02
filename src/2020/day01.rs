@@ -1,10 +1,10 @@
 use aoc::read_input;
-use std::error::Error;
+use aoc::Result;
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<()> {
     println!("Day 1!");
 
-    let mut input = read_input::<i32>(2020, 1)?;
+    let mut input: Vec<i32> = read_input(2020, 1)?;
 
     match solve(&mut input) {
         Some(solution) => println!("Solution: {}", solution),
@@ -106,7 +106,7 @@ mod tests {
 
     #[test]
     fn test_solution() {
-        let mut input = read_input::<i32>(2020, 1).unwrap();
+        let mut input: Vec<i32> = read_input(2020, 1).unwrap();
         let solution = solve(&mut input);
         assert_eq!(Some(155806250), solution);
     }
