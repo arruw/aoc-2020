@@ -11,12 +11,13 @@ where
 {
     let path = format!("data/{}/day{:02}.txt", year, day);
 
-    let file = File::open(path)?;
+    let file = File::open(path).expect("Can not open the input file!");
 
     let input: Vec<_> = BufReader::new(file)
         .lines()
-        .map(|l| l.unwrap())
-        .map(|l| l.trim().parse::<T>().unwrap())
+        .map(|l| l.expect("Can not read input line!"))
+        .map(|l| l.trim().to_string())
+        .map(|l| l.parse::<T>().expect("Can not parse the input line!"))
         .collect();
 
     Ok(input)
