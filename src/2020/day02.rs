@@ -2,119 +2,62 @@ use std::error::Error;
 
 use aoc::read_input;
 use aoc::Result;
-use itertools::Itertools;
+use lazy_static::lazy_static;
+use regex::Regex;
 
 fn main() -> Result<()> {
     println!("Day 2!");
-    let mut input: Vec<PasswordEntry<PasswordPolicy2>> = read_input(2020, 2).unwrap();
-    let solution = solve(&mut input);
+    let mut input: Vec<PasswordEntry> = read_input(2020, 2).unwrap();
+    let solution = solve_p2(&mut input);
     println!("Solution: {}", solution);
 
     Ok(())
 }
 
-fn solve<T>(input: &mut Vec<PasswordEntry<T>>) -> usize
-where
-    T: PasswordPolicyValidator,
-{
+fn solve_p1(input: &mut Vec<PasswordEntry>) -> usize {
     input
         .iter()
-        .filter(|p| p.policy.is_policy_valid(&p.password))
+        .filter(|p| {
+            let count = p.password.chars().filter(|c| c == &p.policy_char).count();
+
+            p.policy_lower_bound <= count && count <= p.policy_upper_bound
+        })
         .count()
 }
 
-struct PasswordEntry<T>
-where
-    T: PasswordPolicyValidator,
-{
+fn solve_p2(input: &mut Vec<PasswordEntry>) -> usize {
+    input
+        .iter()
+        .filter(|p| {
+            let c1 = p.password.chars().nth(p.policy_lower_bound - 1).unwrap();
+            let c2 = p.password.chars().nth(p.policy_upper_bound - 1).unwrap();
+
+            (c1 == p.policy_char) ^ (c2 == p.policy_char)
+        })
+        .count()
+}
+
+struct PasswordEntry {
     password: String,
-    policy: T,
+    policy_char: char,
+    policy_lower_bound: usize,
+    policy_upper_bound: usize,
 }
 
-trait PasswordPolicyValidator {
-    fn is_policy_valid(&self, password: &str) -> bool;
-}
-
-struct PasswordPolicy1 {
-    char: char,
-    lower_bound: usize,
-    upper_bound: usize,
-}
-
-struct PasswordPolicy2 {
-    char: char,
-    lower_index: usize,
-    upper_index: usize,
-}
-
-impl PasswordPolicyValidator for PasswordPolicy1 {
-    fn is_policy_valid(&self, password: &str) -> bool {
-        let count = password.chars().filter(|c| c == &self.char).count();
-
-        self.lower_bound <= count && count <= self.upper_bound
-    }
-}
-
-impl PasswordPolicyValidator for PasswordPolicy2 {
-    fn is_policy_valid(&self, password: &str) -> bool {
-        let mut chunk = password
-            .chars()
-            .skip(self.lower_index)
-            .take(self.upper_index - self.lower_index + 1);
-
-        let c1 = chunk.next().unwrap();
-        let c2 = chunk.last().unwrap();
-        (c1 == self.char && c2 != self.char) || (c1 != self.char && c2 == self.char)
-    }
-}
-
-impl<T> std::str::FromStr for PasswordEntry<T>
-where
-    T: PasswordPolicyValidator,
-    T: std::str::FromStr,
-    <T as std::str::FromStr>::Err: std::fmt::Debug,
-{
+impl std::str::FromStr for PasswordEntry {
     type Err = Box<dyn Error>;
 
     fn from_str(s: &str) -> Result<Self> {
-        let (raw_policy, raw_password) = s.split(": ").collect_tuple().unwrap();
-        let policy = raw_policy.parse::<T>().unwrap();
-
+        lazy_static! {
+            static ref RE: Regex =
+                Regex::new(r"(?P<lb>\d+)-(?P<ub>\d+) (?P<c>\w): (?P<pwd>\w+)").unwrap();
+        }
+        let cap = RE.captures(s).unwrap();
         Ok(PasswordEntry {
-            password: raw_password.trim().to_string(),
-            policy,
-        })
-    }
-}
-
-impl std::str::FromStr for PasswordPolicy1 {
-    type Err = Box<dyn Error>;
-
-    fn from_str(s: &str) -> Result<Self> {
-        let (raw_bounds, raw_char) = s.trim().split(' ').collect_tuple().unwrap();
-        let (raw_lower_bound, raw_upper_bound) =
-            raw_bounds.trim().split('-').collect_tuple().unwrap();
-
-        Ok(PasswordPolicy1 {
-            char: raw_char.chars().next().unwrap(),
-            lower_bound: raw_lower_bound.parse()?,
-            upper_bound: raw_upper_bound.parse()?,
-        })
-    }
-}
-
-impl std::str::FromStr for PasswordPolicy2 {
-    type Err = Box<dyn Error>;
-
-    fn from_str(s: &str) -> Result<Self> {
-        let (raw_bounds, raw_char) = s.trim().split(' ').collect_tuple().unwrap();
-        let (raw_lower_index, raw_upper_index) =
-            raw_bounds.trim().split('-').collect_tuple().unwrap();
-
-        Ok(PasswordPolicy2 {
-            char: raw_char.chars().next().unwrap(),
-            lower_index: raw_lower_index.parse::<usize>()? - 1,
-            upper_index: raw_upper_index.parse::<usize>()? - 1,
+            password: cap.name("pwd").unwrap().as_str().parse()?,
+            policy_char: cap.name("c").unwrap().as_str().parse()?,
+            policy_lower_bound: cap.name("lb").unwrap().as_str().parse()?,
+            policy_upper_bound: cap.name("ub").unwrap().as_str().parse()?,
         })
     }
 }
@@ -127,9 +70,9 @@ mod tests {
     fn test_part1_sample_input() {
         let input = &mut vec!["1-3 a: abcde", "1-3 b: cdefg", "2-9 c: ccccccccc"]
             .iter()
-            .map(|l| l.parse::<PasswordEntry<PasswordPolicy1>>().unwrap())
+            .map(|l| l.parse::<PasswordEntry>().unwrap())
             .collect();
-        let solution = solve(input);
+        let solution = solve_p1(input);
 
         assert_eq!(2, solution);
     }
@@ -138,24 +81,24 @@ mod tests {
     fn test_part2_sample_input() {
         let input = &mut vec!["1-3 a: abcde", "1-3 b: cdefg", "2-9 c: ccccccccc"]
             .iter()
-            .map(|l| l.parse::<PasswordEntry<PasswordPolicy2>>().unwrap())
+            .map(|l| l.parse::<PasswordEntry>().unwrap())
             .collect();
-        let solution = solve(input);
+        let solution = solve_p2(input);
 
         assert_eq!(1, solution);
     }
 
     #[test]
     fn test_part1_solution() {
-        let mut input: Vec<PasswordEntry<PasswordPolicy1>> = read_input(2020, 2).unwrap();
-        let solution = solve(&mut input);
+        let mut input: Vec<PasswordEntry> = read_input(2020, 2).unwrap();
+        let solution = solve_p1(&mut input);
         assert_eq!(439, solution);
     }
 
     #[test]
     fn test_part2_solution() {
-        let mut input: Vec<PasswordEntry<PasswordPolicy2>> = read_input(2020, 2).unwrap();
-        let solution = solve(&mut input);
+        let mut input: Vec<PasswordEntry> = read_input(2020, 2).unwrap();
+        let solution = solve_p2(&mut input);
         assert_eq!(584, solution);
     }
 }

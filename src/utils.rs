@@ -9,7 +9,6 @@ pub type Result<T> = std::result::Result<T, Box<dyn Error>>;
 pub fn read_input<C, T>(year: u32, day: u32) -> Result<C>
 where
     T: FromStr,
-    T: Sized,
     <T as FromStr>::Err: Debug,
     C: FromIterator<T>,
 {
