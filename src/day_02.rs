@@ -1,20 +1,19 @@
-use std::error::Error;
-
-use aoc::read_input;
-use aoc::Result;
+use crate::*;
 use lazy_static::lazy_static;
 use regex::Regex;
+use std::error::Error;
+use std::str::FromStr;
 
-fn main() -> Result<()> {
-    println!("Day 2!");
-    let mut input: Vec<PasswordEntry> = read_input(2020, 2).unwrap();
-    let solution = solve_p2(&mut input);
-    println!("Solution: {}", solution);
+type Input = Vec<PasswordEntry>;
+type Output = usize;
 
-    Ok(())
+#[allow(dead_code)]
+fn input_generator(input: &str) -> Input {
+    parse_input(input)
 }
 
-fn solve_p1(input: &mut Vec<PasswordEntry>) -> usize {
+#[allow(dead_code)]
+fn solve_part1(input: Input) -> Output {
     input
         .iter()
         .filter(|p| {
@@ -25,7 +24,8 @@ fn solve_p1(input: &mut Vec<PasswordEntry>) -> usize {
         .count()
 }
 
-fn solve_p2(input: &mut Vec<PasswordEntry>) -> usize {
+#[allow(dead_code)]
+fn solve_part2(input: Input) -> Output {
     input
         .iter()
         .filter(|p| {
@@ -44,7 +44,7 @@ struct PasswordEntry {
     policy_upper_bound: usize,
 }
 
-impl std::str::FromStr for PasswordEntry {
+impl FromStr for PasswordEntry {
     type Err = Box<dyn Error>;
 
     fn from_str(s: &str) -> Result<Self> {
@@ -64,41 +64,41 @@ impl std::str::FromStr for PasswordEntry {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{input_generator, solve_part1, solve_part2};
+    use crate::read_input;
+
+    const DAY: u32 = 2;
+    const SAMPLE: &str = " 1-3 a: abcde
+            1-3 b: cdefg
+            2-9 c: ccccccccc";
 
     #[test]
-    fn test_part1_sample_input() {
-        let input = &mut vec!["1-3 a: abcde", "1-3 b: cdefg", "2-9 c: ccccccccc"]
-            .iter()
-            .map(|l| l.parse::<PasswordEntry>().unwrap())
-            .collect();
-        let solution = solve_p1(input);
+    fn test_sample_part1() {
+        let solution = solve_part1(input_generator(SAMPLE));
 
         assert_eq!(2, solution);
     }
 
     #[test]
-    fn test_part2_sample_input() {
-        let input = &mut vec!["1-3 a: abcde", "1-3 b: cdefg", "2-9 c: ccccccccc"]
-            .iter()
-            .map(|l| l.parse::<PasswordEntry>().unwrap())
-            .collect();
-        let solution = solve_p2(input);
+    fn test_sample_part2() {
+        let solution = solve_part2(input_generator(SAMPLE));
 
         assert_eq!(1, solution);
     }
 
     #[test]
-    fn test_part1_solution() {
-        let mut input: Vec<PasswordEntry> = read_input(2020, 2).unwrap();
-        let solution = solve_p1(&mut input);
+    fn test_input_part1() {
+        let input = read_input(2020, DAY).unwrap();
+        let solution = solve_part1(input_generator(&input));
+
         assert_eq!(439, solution);
     }
 
     #[test]
-    fn test_part2_solution() {
-        let mut input: Vec<PasswordEntry> = read_input(2020, 2).unwrap();
-        let solution = solve_p2(&mut input);
+    fn test_input_part2() {
+        let input = read_input(2020, DAY).unwrap();
+        let solution = solve_part2(input_generator(&input));
+
         assert_eq!(584, solution);
     }
 }
