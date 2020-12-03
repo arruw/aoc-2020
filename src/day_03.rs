@@ -1,17 +1,14 @@
 type Input = Vec<Vec<char>>;
 type Output = u64;
 
-#[allow(dead_code)]
-fn input_generator(input: &str) -> Input {
+fn input_transformer(input: &str) -> Input {
     input.lines().map(|l| l.trim().chars().collect()).collect()
 }
 
-#[allow(dead_code)]
 fn solve_part1(input: Input) -> Output {
     solve_slope(&input, &(3, 1))
 }
 
-#[allow(dead_code)]
 fn solve_part2(input: Input) -> Output {
     let slopes = [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)];
 
@@ -37,47 +34,47 @@ fn solve_slope(input: &Input, (dc, dr): &Slope) -> Output {
 
 #[cfg(test)]
 mod tests {
-    use super::{input_generator, solve_part1, solve_part2};
-    use crate::read_input;
+    use super::{input_transformer, solve_part1, solve_part2};
+    use crate::utils::*;
 
     const SAMPLE: &str = "..##.......
-    #...#...#..
-    .#....#..#.
-    ..#.#...#.#
-    .#...##..#.
-    ..#.##.....
-    .#.#.#....#
-    .#........#
-    #.##...#...
-    #...##....#
-    .#..#...#.#";
+        #...#...#..
+        .#....#..#.
+        ..#.#...#.#
+        .#...##..#.
+        ..#.##.....
+        .#.#.#....#
+        .#........#
+        #.##...#...
+        #...##....#
+        .#..#...#.#";
 
     #[test]
-    fn test_sample_part1() {
-        let solution = solve_part1(input_generator(SAMPLE));
+    fn test_part1_sample() {
+        let solution = solve_part1(input_transformer(SAMPLE));
 
         assert_eq!(7, solution);
     }
 
     #[test]
-    fn test_sample_part2() {
-        let solution = solve_part2(input_generator(SAMPLE));
-
-        assert_eq!(336, solution);
-    }
-
-    #[test]
-    fn test_input_part1() {
+    fn test_part1_puzzle() {
         let input = read_input(2020, 3).unwrap();
-        let solution = solve_part1(input_generator(&input));
+        let solution = solve_part1(input_transformer(&input));
 
         assert_eq!(272, solution);
     }
 
     #[test]
-    fn test_input_part2() {
+    fn test_part2_sample() {
+        let solution = solve_part2(input_transformer(SAMPLE));
+
+        assert_eq!(336, solution);
+    }
+
+    #[test]
+    fn test_part2_puzzle() {
         let input = read_input(2020, 3).unwrap();
-        let solution = solve_part2(input_generator(&input));
+        let solution = solve_part2(input_transformer(&input));
 
         assert_eq!(3898725600, solution);
     }

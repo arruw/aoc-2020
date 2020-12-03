@@ -1,5 +1,5 @@
-use crate::*;
-use lazy_static::lazy_static;
+use crate::utils::*;
+
 use regex::Regex;
 use std::error::Error;
 use std::str::FromStr;
@@ -7,12 +7,10 @@ use std::str::FromStr;
 type Input = Vec<PasswordEntry>;
 type Output = usize;
 
-#[allow(dead_code)]
-fn input_generator(input: &str) -> Input {
+fn input_transformer(input: &str) -> Input {
     parse_input(input)
 }
 
-#[allow(dead_code)]
 fn solve_part1(input: Input) -> Output {
     input
         .iter()
@@ -24,7 +22,6 @@ fn solve_part1(input: Input) -> Output {
         .count()
 }
 
-#[allow(dead_code)]
 fn solve_part2(input: Input) -> Output {
     input
         .iter()
@@ -64,8 +61,8 @@ impl FromStr for PasswordEntry {
 
 #[cfg(test)]
 mod tests {
-    use super::{input_generator, solve_part1, solve_part2};
-    use crate::read_input;
+    use super::{input_transformer, solve_part1, solve_part2};
+    use crate::utils::*;
 
     const DAY: u32 = 2;
     const SAMPLE: &str = " 1-3 a: abcde
@@ -73,31 +70,31 @@ mod tests {
             2-9 c: ccccccccc";
 
     #[test]
-    fn test_sample_part1() {
-        let solution = solve_part1(input_generator(SAMPLE));
+    fn test_part1_sample() {
+        let solution = solve_part1(input_transformer(SAMPLE));
 
         assert_eq!(2, solution);
     }
 
     #[test]
-    fn test_sample_part2() {
-        let solution = solve_part2(input_generator(SAMPLE));
-
-        assert_eq!(1, solution);
-    }
-
-    #[test]
-    fn test_input_part1() {
+    fn test_part1_puzzle() {
         let input = read_input(2020, DAY).unwrap();
-        let solution = solve_part1(input_generator(&input));
+        let solution = solve_part1(input_transformer(&input));
 
         assert_eq!(439, solution);
     }
 
     #[test]
-    fn test_input_part2() {
+    fn test_part2_sample() {
+        let solution = solve_part2(input_transformer(SAMPLE));
+
+        assert_eq!(1, solution);
+    }
+
+    #[test]
+    fn test_part2_puzzle() {
         let input = read_input(2020, DAY).unwrap();
-        let solution = solve_part2(input_generator(&input));
+        let solution = solve_part2(input_transformer(&input));
 
         assert_eq!(584, solution);
     }
