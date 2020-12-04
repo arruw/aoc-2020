@@ -1,129 +1,150 @@
-use std::collections::*;
+use crate::utils::*;
+
+use std::{collections::hash_map::RandomState, iter::FromIterator};
+use std::{collections::*, str::FromStr};
 
 use itertools::Itertools;
 use regex::Regex;
 
 const DAY: u32 = 4;
 
-type Input = Vec<String>;
+type Input<'a> = Vec<HashMap<String, String>>;
 type Output = usize;
 
-// lazy_static! {
-//     static ref KV_RE: Regex =
-//         Regex::new(r"\b(?P<key>byr|iyr|eyr|hgt|hcl|ecl|pid):(?P<value>#?\w+)\b").unwrap();
-// }
+lazy_static! {
+    static ref KV_RE: Regex = Regex::new(r"\b(?P<key>\w{3}):(?P<value>#?\w+)\b").unwrap();
+}
 
-// struct Passport {
-//     byr: String,
-//     iyr: String,
-//     eyr: String,
-//     hgt: String,
-//     hcl: String,
-//     ecl: String,
-//     pid: String,
+lazy_static! {
+    static ref VALUE_RE: HashMap<String, Regex> = hashmap! {
+        "byr".to_string() => Regex::new(r"(\d{4})\b").unwrap(),
+        "iyr".to_string() => Regex::new(r"(\d{4})\b").unwrap(),
+        "eyr".to_string() => Regex::new(r"(\d{4})\b").unwrap(),
+        "hgt".to_string() => Regex::new(r"(\d+)(in|cm)\b").unwrap(),
+        "hcl".to_string() => Regex::new(r"(#\w{6})\b").unwrap(),
+        "ecl".to_string() => Regex::new(r"(amb|blu|brn|gry|grn|hzl|oth)\b").unwrap(),
+        "pid".to_string() => Regex::new(r"(\d{9})\b").unwrap(),
+    };
+}
+
+// lazy_static! {
+//     static ref VALUE_RE: HashMap<&str, Regex> = hashmap! {
+//         "byr" => Regex::new(r"(\d{4})\b").unwrap(),
+//         "iyr" => Regex::new(r"(\d{4})\b").unwrap(),
+//         "eyr" => Regex::new(r"(\d{4})\b").unwrap(),
+//         "hgt" => Regex::new(r"(\d+)(in|cm)\b").unwrap(),
+//         "hcl" => Regex::new(r"(#\w{6})\b").unwrap(),
+//         "ecl" => Regex::new(r"(amb|blu|brn|gry|grn|hzl|oth)\b").unwrap(),
+//         "pid" => Regex::new(r"(\d{9})\b").unwrap(),
+//     };
 // }
 
 fn input_transformer(input: &str) -> Input {
-    let mut pwds = Vec::new();
-    let mut p = Vec::new();
+    let mut raw_passports: Vec<String> = vec![];
+    let mut buffer = String::new();
     for l in input.lines() {
-        if l.trim().is_empty() && !p.is_empty() {
-            pwds.push(p.to_owned().join(" "));
-            p.clear();
-            continue;
+        if l.trim().is_empty() {
+            raw_passports.push(buffer.trim().to_string());
+            buffer.clear();
+        } else {
+            buffer.push_str(l.trim());
         }
-        p.push(l.trim());
     }
-    if !p.is_empty() {
-        pwds.push(p.to_owned().join(" "));
+    if !buffer.is_empty() {
+        raw_passports.push(buffer.trim().to_string());
+        buffer.clear();
     }
-    pwds
+
+    let mut passports: Vec<HashMap<String, String>> = vec![];
+    for p in raw_passports {
+        let passport = KV_RE
+            .captures_iter(&p)
+            .map(|c| {
+                (
+                    c.name("key").unwrap().as_str().to_string(),
+                    c.name("value").unwrap().as_str().to_string(),
+                )
+            })
+            .collect();
+
+        passports.push(passport);
+    }
+
+    passports
 }
 
 fn solve_part1(input: Input) -> Output {
-    let kv = Regex::new(r"\b(?P<key>byr|iyr|eyr|hgt|hcl|ecl|pid):(?P<value>#?\w+)\b").unwrap();
-    let rules = hashmap! {
-        "byr" => Regex::new(r"\b(\d{4})\b").unwrap(),
-        "iyr" => Regex::new(r"\b(\d{4})\b").unwrap(),
-        "eyr" => Regex::new(r"\b(\d{4})\b").unwrap(),
-        "hgt" => Regex::new(r"\b(\d+)(in|cm)\b").unwrap(),
-        "hcl" => Regex::new(r"\b(#?\w{6})\b").unwrap(),
-        "ecl" => Regex::new(r"\b(amb|blu|brn|gry|grn|hzl|oth)\b").unwrap(),
-        "pid" => Regex::new(r"\b(\d{9})\b").unwrap(),
-    };
-
-    input
+    let x: Vec<_> = VALUE_RE.keys().into_iter().collect();
+    let required: HashSet<_> = VALUE_RE.keys().into_iter().collect();
+    let count = input
         .iter()
-        .filter(|l| {
-            let valid_keys: Vec<&str> = kv
-                .captures_iter(l)
-                .map(|c| {
-                    (
-                        c.name("key").unwrap().as_str(),
-                        c.name("value").unwrap().as_str(),
-                    )
-                })
-                .filter(|(k, _)| rules.contains_key(k))
-                .map(|(k, _)| k)
-                .collect();
+        .filter(|p| {
+            let found: HashSet<&String> = p.keys().into_iter().collect();
 
-            valid_keys.iter().unique().count() == rules.keys().len()
+            let diff = required.difference(&found);
+
+            let diff = diff.count() == 0;
+
+            diff
         })
-        .count()
+        .count();
+
+    count
 }
 
 fn solve_part2(input: Input) -> Output {
-    let kv = Regex::new(r"\b(?P<key>byr|iyr|eyr|hgt|hcl|ecl|pid):(?P<value>#?\w+)\b").unwrap();
-    let rules = hashmap! {
-        "byr" => Regex::new(r"(\d{4})\b").unwrap(),
-        "iyr" => Regex::new(r"(\d{4})\b").unwrap(),
-        "eyr" => Regex::new(r"(\d{4})\b").unwrap(),
-        "hgt" => Regex::new(r"(\d+)(in|cm)\b").unwrap(),
-        "hcl" => Regex::new(r"(#\w{6})\b").unwrap(),
-        "ecl" => Regex::new(r"(amb|blu|brn|gry|grn|hzl|oth)\b").unwrap(),
-        "pid" => Regex::new(r"(\d{9})\b").unwrap(),
-    };
+    // let kv = Regex::new(r"\b(?P<key>byr|iyr|eyr|hgt|hcl|ecl|pid):(?P<value>#?\w+)\b").unwrap();
+    // let rules = hashmap! {
+    //     "byr" => Regex::new(r"(\d{4})\b").unwrap(),
+    //     "iyr" => Regex::new(r"(\d{4})\b").unwrap(),
+    //     "eyr" => Regex::new(r"(\d{4})\b").unwrap(),
+    //     "hgt" => Regex::new(r"(\d+)(in|cm)\b").unwrap(),
+    //     "hcl" => Regex::new(r"(#\w{6})\b").unwrap(),
+    //     "ecl" => Regex::new(r"(amb|blu|brn|gry|grn|hzl|oth)\b").unwrap(),
+    //     "pid" => Regex::new(r"(\d{9})\b").unwrap(),
+    // };
 
-    input
-        .iter()
-        .filter(|l| {
-            let valid_keys: Vec<&str> = kv
-                .captures_iter(l)
-                .map(|c| {
-                    (
-                        c.name("key").unwrap().as_str(),
-                        c.name("value").unwrap().as_str(),
-                    )
-                })
-                .filter(|(k, _)| rules.contains_key(k))
-                .filter(|(k, v)| {
-                    let ok = rules.get(k).unwrap().is_match(v);
-                    let ok = ok
-                        && match &k[..] {
-                            "byr" => str_num_between(v, 1920, 2002),
-                            "iyr" => str_num_between(v, 2010, 2020),
-                            "eyr" => str_num_between(v, 2020, 2030),
-                            "hgt" => {
-                                let n = &v[..v.len() - 2];
-                                let units = &v[v.len() - 2..];
-                                match units {
-                                    "in" => str_num_between(n, 59, 76),
-                                    "cm" => str_num_between(n, 150, 193),
-                                    _ => false,
-                                }
-                            }
-                            _ => true,
-                        };
+    // input
+    //     .iter()
+    //     .filter(|l| {
+    //         let valid_keys: Vec<&str> = kv
+    //             .captures_iter(l)
+    //             .map(|c| {
+    //                 (
+    //                     c.name("key").unwrap().as_str(),
+    //                     c.name("value").unwrap().as_str(),
+    //                 )
+    //             })
+    //             .filter(|(k, _)| rules.contains_key(k))
+    //             .filter(|(k, v)| {
+    //                 let ok = rules.get(k).unwrap().is_match(v);
+    //                 let ok = ok
+    //                     && match &k[..] {
+    //                         "byr" => str_num_between(v, 1920, 2002),
+    //                         "iyr" => str_num_between(v, 2010, 2020),
+    //                         "eyr" => str_num_between(v, 2020, 2030),
+    //                         "hgt" => {
+    //                             let n = &v[..v.len() - 2];
+    //                             let units = &v[v.len() - 2..];
+    //                             match units {
+    //                                 "in" => str_num_between(n, 59, 76),
+    //                                 "cm" => str_num_between(n, 150, 193),
+    //                                 _ => false,
+    //                             }
+    //                         }
+    //                         _ => true,
+    //                     };
 
-                    ok
-                })
-                .map(|(k, _)| k)
-                .collect();
+    //                 ok
+    //             })
+    //             .map(|(k, _)| k)
+    //             .collect();
 
-            let x = l;
-            valid_keys.iter().unique().count() == rules.keys().len()
-        })
-        .count()
+    //         let x = l;
+    //         valid_keys.iter().unique().count() == rules.keys().len()
+    //     })
+    //     .count()
+    0
 }
 
 fn str_num_between(s: &str, l: i32, u: i32) -> bool {
