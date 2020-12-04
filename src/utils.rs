@@ -1,9 +1,10 @@
 use std::io;
+use std::iter::FromIterator;
 use std::str::FromStr;
-use std::{error::Error, iter::FromIterator};
 use std::{fmt::Debug, fs, path::Path};
 
-pub type Result<T> = std::result::Result<T, Box<dyn Error>>;
+pub type Error = Box<dyn std::error::Error>;
+pub type Result<T> = std::result::Result<T, Error>;
 
 pub fn read_input(year: u32, day: u32) -> io::Result<String> {
     let path = format!("input/{}/day{}.txt", year, day);
