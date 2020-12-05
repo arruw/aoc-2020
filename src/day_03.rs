@@ -16,7 +16,7 @@ fn solve_part2(input: Input) -> Output {
 }
 
 type Slope = (usize, usize);
-fn solve_slope(input: &Input, (dc, dr): &Slope) -> Output {
+fn solve_slope(input: &[Vec<char>], (dc, dr): &Slope) -> Output {
     let clen = input[0].len();
     let rlen = input.len();
     let mut count: u64 = 0;

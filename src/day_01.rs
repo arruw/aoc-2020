@@ -10,12 +10,12 @@ fn input_transformer(input: &str) -> Input {
 }
 
 fn solve_part1(input: Input) -> Output {
-    let (a, b) = sum2n(&input.as_slice(), 2020).unwrap();
+    let (a, b) = sum2n(&input, 2020).unwrap();
     input[a] * input[b]
 }
 
 fn solve_part2(input: Input) -> Output {
-    let (a, b, c) = sum3n(&input.as_slice(), 2020).unwrap();
+    let (a, b, c) = sum3n(&input, 2020).unwrap();
     input[a] * input[b] * input[c]
 }
 

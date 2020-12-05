@@ -20,9 +20,24 @@ where
 {
     let input = input
         .lines()
-        .map(|l| l.trim().to_string())
-        .map(|l| l.parse::<T>().unwrap())
+        .map(|l| l.trim().parse::<T>().unwrap())
         .collect();
 
     input
+}
+
+pub trait CharAtExt {
+    fn char_at(&self, at: usize) -> Option<char>;
+}
+
+impl CharAtExt for String {
+    fn char_at(&self, at: usize) -> Option<char> {
+        self.chars().nth(at)
+    }
+}
+
+impl CharAtExt for &str {
+    fn char_at(&self, at: usize) -> Option<char> {
+        self.chars().nth(at)
+    }
 }
