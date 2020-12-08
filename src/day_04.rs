@@ -64,9 +64,7 @@ fn extract_details(raw_passports: &[String]) -> Input {
 
 fn input_transformer(input: &str) -> Input {
     let raw_passports = group_rows(input);
-    let passports = extract_details(&raw_passports);
-
-    passports
+    extract_details(&raw_passports)
 }
 
 fn solve_part1(input: Input) -> Output {
