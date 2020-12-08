@@ -41,3 +41,21 @@ impl CharAtExt for &str {
         self.chars().nth(at)
     }
 }
+
+pub fn modulo(x: isize, m: usize) -> usize {
+    let m = m as isize;
+    ((x % m + m) % m) as usize
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_modulo() {
+        assert_eq!(2, modulo(2, 10));
+        assert_eq!(0, modulo(10, 10));
+        assert_eq!(8, modulo(-2, 10));
+        assert_eq!(8, modulo(-12, 10));
+    }
+}

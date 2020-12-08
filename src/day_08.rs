@@ -1,100 +1,101 @@
-use itertools::Itertools;
+use crate::utils::{modulo, parse_input, Error};
+use std::collections::*;
+use std::str::FromStr;
 
 const DAY: u32 = 8;
 
-type Input = Vec<(String, isize)>;
+type Input = Vec<Instruction>;
 type Output = isize;
 
-// struct Nop()
-// struct Acc(isize)
-// struct Jmp(isize)
+enum Op {
+    Nop,
+    Acc,
+    Jmp,
+}
 
-// trait Exec {
-//     fn exec(&self, arg: isize)
-// }
+struct Instruction(Op, isize);
+
+impl FromStr for Op {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s {
+            "nop" => Op::Nop,
+            "acc" => Op::Acc,
+            "jmp" => Op::Jmp,
+            op => panic!("Unknown operation '{}'!", op),
+        })
+    }
+}
+
+impl FromStr for Instruction {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self(s[..3].parse()?, s[4..].parse()?))
+    }
+}
+
+impl Instruction {
+    fn execute(&self, reg: isize, index: usize) -> (isize, isize) {
+        match self {
+            Instruction(Op::Nop, _) => (reg, (index + 1) as isize),
+            Instruction(Op::Acc, arg) => (reg + arg, (index + 1) as isize),
+            Instruction(Op::Jmp, arg) => (reg, (index as isize) + arg),
+        }
+    }
+
+    fn flip(&mut self) {
+        match self.0 {
+            Op::Jmp => self.0 = Op::Nop,
+            Op::Nop => self.0 = Op::Jmp,
+            Op::Acc => (),
+        };
+    }
+}
+
+fn boot(instructions: &[Instruction]) -> (bool, isize, HashSet<usize>) {
+    let len = instructions.len();
+    let mut index = 0;
+    let mut reg = 0;
+    let mut visited = hashset![];
+    while !visited.contains(&index) {
+        visited.insert(index);
+
+        let instruction = &instructions[index];
+        let (new_reg, new_index) = instruction.execute(reg, index);
+
+        if index == len - 1 {
+            return (true, new_reg, visited);
+        }
+
+        reg = new_reg;
+        index = modulo(new_index, len);
+    }
+    (false, reg, visited)
+}
 
 fn input_transformer(input: &str) -> Input {
-    input
-        .lines()
-        .map(|l| l.trim())
-        .map(|l| {
-            l.split(' ')
-                .map(|p| p.trim().to_string())
-                .collect_tuple::<(String, String)>()
-                .unwrap()
-        })
-        .map(|(op, arg)| (op, arg.parse::<isize>().unwrap()))
-        .collect()
+    parse_input(input)
 }
 
-fn solve_part1(input: &Input) -> (isize, Vec<bool>) {
-    let len = input.len();
-    let mut visited = vec![false; len];
-    let mut acc = 0;
-    let mut i = 0;
-    while !visited[i] {
-        visited[i] = true;
-        let (op, arg) = &input[i];
-        match &op[..] {
-            "acc" => {
-                acc += arg;
-                i += 1;
-            }
-            "jmp" => i = ((i as isize) + arg % (len as isize)) as usize,
-            _ => i += 1,
-        }
-    }
-    (acc, visited)
+fn solve_part1(input: &Input) -> isize {
+    let (_, reg, _) = boot(input);
+    reg
 }
 
-fn will_terminate(input: &Input, change_op_at: usize) -> (bool, isize) {
-    let len = input.len();
-    let mut visited = vec![false; len];
-    let mut acc = 0;
-    let mut i = 0;
-    while !visited[i] {
-        visited[i] = true;
-        let (op, arg) = &input[i];
-        let mut op = op.to_owned();
-        if i == change_op_at {
-            match &op[..] {
-                "nop" => op = "jmp".to_string(),
-                "jmp" => op = "nop".to_string(),
-                _ => (),
-            }
-        }
-        let mut next_i = i;
-        match &op[..] {
-            "acc" => {
-                acc += arg;
-                next_i += 1;
-            }
-            "jmp" => next_i = ((next_i as isize) + arg % (len as isize)) as usize,
-            "nop" => next_i += 1,
-            ins => panic!("Unknown instruction '{}'!", ins),
-        }
-        if i == len - 1 {
-            return (true, acc);
-        }
-        i = next_i;
-    }
-    (false, acc)
-}
-
-fn solve_part2(input: Input) -> Output {
-    let len = input.len();
-    let (_, visited) = solve_part1(&input);
-    for i in 0..len {
-        if !visited[i] {
+fn solve_part2(input: &mut Input) -> Output {
+    let (_, _, visited) = boot(input);
+    for index in visited {
+        if let Op::Acc = input[index].0 {
             continue;
         }
-
-        let (ended, acc) = will_terminate(&input, i);
-        if !ended {
-            continue;
+        input[index].flip();
+        let (booted, reg, _) = boot(input);
+        input[index].flip();
+        if booted {
+            return reg;
         }
-
-        return acc;
     }
     panic!("No solution!");
 }
@@ -116,7 +117,7 @@ mod tests {
 
     #[test]
     fn test_part1_sample() {
-        let (solution, _) = solve_part1(&input_transformer(SAMPLE));
+        let solution = solve_part1(&input_transformer(SAMPLE));
 
         assert_eq!(5, solution);
     }
@@ -124,14 +125,14 @@ mod tests {
     #[test]
     fn test_part1_puzzle() {
         let input = read_input(2020, DAY).unwrap();
-        let (solution, _) = solve_part1(&input_transformer(&input));
+        let solution = solve_part1(&input_transformer(&input));
 
         assert_eq!(1709, solution);
     }
 
     #[test]
     fn test_part2_sample() {
-        let solution = solve_part2(input_transformer(SAMPLE));
+        let solution = solve_part2(&mut input_transformer(SAMPLE));
 
         assert_eq!(8, solution);
     }
@@ -139,7 +140,7 @@ mod tests {
     #[test]
     fn test_part2_puzzle() {
         let input = read_input(2020, DAY).unwrap();
-        let solution = solve_part2(input_transformer(&input));
+        let solution = solve_part2(&mut input_transformer(&input));
 
         assert_eq!(1976, solution);
     }
