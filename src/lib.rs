@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
+#![allow(clippy::ptr_arg)]
+#![allow(clippy::clippy::needless_range_loop)]
 #![feature(str_split_once)]
 
 #[macro_use]
