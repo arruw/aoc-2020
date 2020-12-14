@@ -1,5 +1,8 @@
 {
   "editor.formatOnSave": true,
   "editor.tabSize": 4,
-  "rust.clippy_preference": "on"
+  "rust.clippy_preference": "on",
+  "cSpell.words": [
+    "Itertools"
+  ]
 }

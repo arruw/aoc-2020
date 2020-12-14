@@ -44,6 +44,7 @@ fn solve_part1(input: &Input) -> Output {
 }
 
 fn solve_part2(input: &Input, first: usize) -> Output {
+    // TODO - Solve using the Chinese remainder theorem
     println!("Do some magic:");
     println!("Solve[{{Mod[x + 0 , 17] == 0 ,Mod[x + 11, 37] == 0 ,Mod[x + 17, 409] == 0 ,Mod[x + 19, 29] == 0 ,Mod[x + 30, 13] == 0 ,Mod[x + 40, 23] == 0 ,Mod[x + 48, 373] == 0 ,Mod[x + 58, 41] == 0 ,Mod[x + 67, 19] == 0}}, x, Integers]");
     530015546283687
