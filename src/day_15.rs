@@ -30,15 +30,10 @@ fn solve(input: &Input, target: u32) -> Output {
         .collect::<HashMap<_, _>>();
 
     (start..target + 1).fold(*input.last().unwrap(), |spoken, i| {
-        let spoken = if let Some((first, last)) = seen.get(&spoken) {
-            if first != last {
-                last - first
-            } else {
-                0
-            }
-        } else {
-            0
-        };
+        let spoken = seen
+            .get(&spoken)
+            .and_then(|(o1, o2)| if o1 != o2 { Some(o2 - o1) } else { None })
+            .unwrap_or(0);
 
         let entry = seen.entry(spoken).or_insert((i, i));
         entry.0 = entry.1;
