@@ -29,24 +29,23 @@ fn solve(input: &Input, target: u32) -> Output {
         .map(|(i, &e)| (e, (i as u32 + 1, i as u32 + 1)))
         .collect::<HashMap<_, _>>();
 
-    let mut last_spoken = *input.last().unwrap();
-    for i in start..target + 1 {
-        let mut spoken = 0;
-        if let Some((first, last)) = seen.get(&last_spoken) {
+    (start..target + 1).fold(*input.last().unwrap(), |spoken, i| {
+        let spoken = if let Some((first, last)) = seen.get(&spoken) {
             if first != last {
-                spoken = last - first;
+                last - first
+            } else {
+                0
             }
-        }
-
-        if let Some((first, last)) = seen.get(&spoken) {
-            seen.insert(spoken, (*last, i));
         } else {
-            seen.insert(spoken, (i, i));
-        }
+            0
+        };
 
-        last_spoken = spoken;
-    }
-    last_spoken
+        let entry = seen.entry(spoken).or_insert((i, i));
+        entry.0 = entry.1;
+        entry.1 = i;
+
+        spoken
+    })
 }
 
 #[cfg(test)]
