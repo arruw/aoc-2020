@@ -2,12 +2,16 @@
 #![allow(unused_variables)]
 #![allow(clippy::ptr_arg)]
 #![allow(clippy::clippy::needless_range_loop)]
+#![allow(clippy::many_single_char_names)]
 #![feature(str_split_once)]
 
 #[macro_use]
 extern crate lazy_static;
 #[macro_use]
 extern crate maplit;
+extern crate pest;
+#[macro_use]
+extern crate pest_derive;
 
 pub mod utils;
 
@@ -29,3 +33,4 @@ pub mod day_15;
 pub mod day_16;
 pub mod day_17;
 pub mod day_18;
+pub mod day_19;
